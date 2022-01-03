@@ -1,0 +1,5 @@
+numpy
+pandas
+ploty
+dash
+harvest-python
