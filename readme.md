@@ -12,9 +12,11 @@ GNAT is a financial tool with two goals in mind:
 ```bash
 pip install -r requirements.txt
 python gnat.py
+-OR-
+python gnat.py my_config.yaml
 ```
 
-Then go to `localhost:8050` to see the dashboard.
+Input the requested information and then go to `localhost:8050` to see the dashboard.
 
 ### How it works
 
