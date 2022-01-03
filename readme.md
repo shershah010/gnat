@@ -4,7 +4,7 @@
 
 GNAT is a financial tool with two goals in mind:
 
-1. To provide a dashboard with the detailed stock/crypto information of you choice.
+1. To provide a dashboard with the detailed stock/crypto information of your choice.
 2. To provide confidence in the Harvest framework which GNAT heavily relies on.
 
 ### How to use
