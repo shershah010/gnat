@@ -19,14 +19,20 @@ def start_harvest(assets, algo, storage, streamer, broker):
     trader.start("1MIN", all_history=False)
 
 
-def get_input()
+def valid_cmd(cmd: str):
+    return False
+
+
+def get_input(user_cmds, lock)
     cmd = ""
     print("Type 'q' or 'quit' to exit.")
     while cmd != "q" or cmd != "quit":
         print("Enter a command:")
-        cmd = input().lower()
-        print("You typed:", cmd)
-        print("User input handling still in progress.")
+        cmd = input()
+        if valid_cmd(cmd):
+            self.lock.aquire()
+            user_cmds.append(cmd)
+            self.lock.release()
 
     print("Goodbye!")
 
@@ -37,17 +43,23 @@ if __name__ == "__main__":
     assets = input()
     validate_assets(assets)
 
-    # Get Harvest configuration
     # Store the OHLC data in a folder called `gnat_storage` with each file stored as a csv document
     csv_storage = CSVStorage(save_dir="gnat_storage")
-    dummy = DummyStreamer(dt.datetime.now())
+
+    # Get Harvest configuration
+    print("Pick a streamer: dummy, yahoo, polygon, alpaca.")
+    streamer = input()
+    print("Pick a broker: paper, alpaca.")
+    broker = input()
+    print("Path to secret.yaml if needed.")
+    secret_path = input()
 
     # Init the GNAT algo and get the dash thread
     gnat_algo = GNAT_Algo()
     dash_thread = gnat_algo.dash_thread
     # Start Harvest
-    harvest_thread = threading.Thread(target=start_harvest, args=(assets, gnat_algo, csv_storage, dummy, None) daemon=True).start()
+    harvest_thread = threading.Thread(target=start_harvest, args=(assets, gnat_algo, csv_storage, streamer, broker) daemon=True).start()
 
     # Listen for user input
-    get_input()
+    get_input(gnat_algo.user_cmds, gnat_algo.user_cmds_lock)
     

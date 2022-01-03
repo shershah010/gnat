@@ -18,6 +18,8 @@ class GNAT_Algo(BaseAlgo):
     def __init__(self):
         self.tickers = {}
         self.dash_thread = threading.Thread(target=self.dash, daemon=True).start()
+        self.user_cmds = []
+        self.user_cmds_lock = threading.Lock()
 
 
     def setup(self):
@@ -92,6 +94,12 @@ class GNAT_Algo(BaseAlgo):
                 ticker_value["initial_price"] = current_price
 
             self.process_ticker(ticker, ticker_value, current_price)
+
+        self.user_cmds_lock.aquire()
+        for cmd in self.user_cmds:
+            print("Processing command:", cmd)
+        self.user_cmds.clear()
+        self.user_cmds_lock.release()
 
 
     def process_ticker(self, ticker, ticker_data, current_price):
