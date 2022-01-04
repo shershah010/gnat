@@ -8,16 +8,21 @@ from harvest.trader import LiveTrader
 from harvest.api.dummy import DummyStreamer
 from harvest.api.paper import PaperBroker
 from harvest.api.yahoo import YahooStreamer
-from harvest.api.polygon import PolygonStreamer 
-try: 
+from harvest.api.polygon import PolygonStreamer
+
+try:
     from harvest.api.alpaca import Alpaca
 except:
-    Alpaca = lambda x, y, z: print("Please install 'alpaca-trade-api'")
+
+    def Alpaca(x, y, z):
+        print("Please install 'alpaca-trade-api'")
+
+
 from harvest.storage.csv_storage import CSVStorage
 
 
 def start_harvest(assets, algo, storage, streamer, broker):
-    trader = LiveTrader(streamer=streamer, storage=storage, broker=broker debug=True)
+    trader = LiveTrader(streamer=streamer, storage=storage, broker=broker, debug=True)
     trader.set_symbol(assets)
     trader.set_algo(gnat_algo)
     # Update every minute
@@ -27,17 +32,17 @@ def start_harvest(assets, algo, storage, streamer, broker):
 def valid_cmd(cmd: str):
     """
     Returns true if the given command is valid.
-    Valid commads are of the form: 
+    Valid commads are of the form:
         ACTION TICKER AMOUNT
     """
 
-    tokens = cmd.split(' ')
+    tokens = cmd.split(" ")
 
-    if len(tokens) != 3
+    if len(tokens) != 3:
         print("Incorrect format: require ACTION TICKER AMOUNT")
         return False
 
-    if tokens[0] not in ('buy', 'sell')
+    if tokens[0] not in ("buy", "sell"):
         print("ACTION is not either 'buy' or 'sell'")
         return False
 
@@ -54,7 +59,7 @@ def valid_cmd(cmd: str):
     return True
 
 
-def get_input(user_cmds, lock)
+def get_input(user_cmds, lock):
     cmd = ""
     print("Type 'q' or 'quit' to exit.")
     while cmd != "q" or cmd != "quit":
@@ -76,28 +81,28 @@ def init_harvest_classes(streamer: str, broker: str, secret_path: str):
     elif streamer == "polygon":
         print("Is your account a basic account? (y/n)")
         basic_account = input()
-        streamer_cls = PolygonStreamer(secret_path, basic_account == 'y') 
-    elif streamer == "alpaca"
+        streamer_cls = PolygonStreamer(secret_path, basic_account == "y")
+    elif streamer == "alpaca":
         print("Is your account a basic account? (y/n)")
         basic_account = input()
         print("Do you want to use Alpaca's paper trader? (y/n)")
         paper_trader = input()
-        streamer_cls = Alpaca(secret_path, basic_account=='y', paper_trader=='y')
+        streamer_cls = Alpaca(secret_path, basic_account == "y", paper_trader == "y")
 
     if streamer_cls is None:
         exit()
 
-    if streamer == broker
+    if streamer == broker:
         return streamer_cls, streamer_cls
 
-    if broker == 'paper':
+    if broker == "paper":
         broker_cls = PaperBroker(streamer_cls)
-    elif broker == 'alpaca':
+    elif broker == "alpaca":
         print("Is your account a basic account? (y/n)")
         basic_account = input()
         print("Do you want to use Alpaca's paper trader? (y/n)")
         paper_trader = input()
-        streamer_cls = Alpaca(secret_path, basic_account=='y', paper_trader=='y')
+        streamer_cls = Alpaca(secret_path, basic_account == "y", paper_trader == "y")
 
     if broker_cls is None:
         exit()
@@ -107,7 +112,9 @@ def init_harvest_classes(streamer: str, broker: str, secret_path: str):
 
 if __name__ == "__main__":
     # Get assets
-    print("List your assets' ticker with comma seperation. For cryptos, prefex the ticker with an '@' (e.g @DOGE).")
+    print(
+        "List your assets' ticker with comma seperation. For cryptos, prefex the ticker with an '@' (e.g @DOGE)."
+    )
     assets = input()
 
     # Store the OHLC data in a folder called `gnat_storage` with each file stored as a csv document
@@ -127,8 +134,11 @@ if __name__ == "__main__":
     gnat_algo = GNAT_Algo()
     dash_thread = gnat_algo.dash_thread
     # Start Harvest
-    harvest_thread = threading.Thread(target=start_harvest, args=(assets, gnat_algo, csv_storage, streamer, broker) daemon=True).start()
+    harvest_thread = threading.Thread(
+        target=start_harvest,
+        args=(assets, gnat_algo, csv_storage, streamer, broker),
+        daemon=True,
+    ).start()
 
     # Listen for user input
     get_input(gnat_algo.user_cmds, gnat_algo.user_cmds_lock)
-    

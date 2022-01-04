@@ -21,55 +21,68 @@ class GNAT_Algo(BaseAlgo):
         self.user_cmds = []
         self.user_cmds_lock = threading.Lock()
 
-
     def setup(self):
         def init_ticker(ticker):
-            candles_data = go.Candlestick(x=[],
-                        open=[],
-                        high=[],
-                        low=[],
-                        close=[])
+            candles_data = go.Candlestick(x=[], open=[], high=[], low=[], close=[])
 
             candles_figure = go.Figure(data=candles_data)
-            candles_figure.update_layout(title=ticker + "OHLC", xaxis_title="Timestamp", yaxis_title="Price (USD)")
+            candles_figure.update_layout(
+                title=ticker + "OHLC",
+                xaxis_title="Timestamp",
+                yaxis_title="Price (USD)",
+            )
 
             price_figure = go.Figure(go.Scatter(x=[], y=[]))
-            candles_figure.update_layout(title=ticker + "Price", xaxis_title="Timestamp", yaxis_title="Price (USD)")
+            candles_figure.update_layout(
+                title=ticker + "Price",
+                xaxis_title="Timestamp",
+                yaxis_title="Price (USD)",
+            )
 
             price_delta_figure = go.Figure(go.Scatter(x=[], y=[]))
-            candles_figure.update_layout(title=ticker + "Price Delta", xaxis_title="Timestamp", yaxis_title="Price (USD)")
+            candles_figure.update_layout(
+                title=ticker + "Price Delta",
+                xaxis_title="Timestamp",
+                yaxis_title="Price (USD)",
+            )
 
-            return {ticker: {
-                "initial_price": None,
-                "ohlc": pd.DataFrame(),
-                "candles_figure": candles_figure,
-                "price_figure": price_figure,
-                "price_delta_figure": price_delta_figure
+            return {
+                ticker: {
+                    "initial_price": None,
+                    "ohlc": pd.DataFrame(),
+                    "candles_figure": candles_figure,
+                    "price_figure": price_figure,
+                    "price_delta_figure": price_delta_figure,
                 }
             }
 
         for symbol in self.trader.watchlist:
             self.tickers.update(init_ticker(symbol))
 
-
     def dash(self):
         app = dash.Dash()
         app.layout = self.dash_layout
         app.run_server(debug=True, use_reloader=False)
 
-
     def dash_layout(self):
         graphs = []
         for symbol in self.tickers.keys():
-            graph = dcc.Graph(id=f"{symbol}_candles_figure", figure=self.tickers[symbol]["candles_figure"])
+            graph = dcc.Graph(
+                id=f"{symbol}_candles_figure",
+                figure=self.tickers[symbol]["candles_figure"],
+            )
             graphs.append(graph)
-            graph = dcc.Graph(id=f"{symbol}_price_figure", figure=self.tickers[symbol]["price_figure"])
+            graph = dcc.Graph(
+                id=f"{symbol}_price_figure", figure=self.tickers[symbol]["price_figure"]
+            )
             graphs.append(graph)
-            graph = dcc.Graph(id=f"{symbol}_price_delta_figure", figure=self.tickers[symbol]["price_delta_figure"])
+            graph = dcc.Graph(
+                id=f"{symbol}_price_delta_figure",
+                figure=self.tickers[symbol]["price_delta_figure"],
+            )
             graphs.append(graph)
 
         return html.Div(graphs)
-
 
     def main(self):
 
@@ -97,17 +110,16 @@ class GNAT_Algo(BaseAlgo):
 
         self.user_cmds_lock.aquire()
         for cmd in self.user_cmds:
-            action, ticker, amount = cmd.split(' ')
+            action, ticker, amount = cmd.split(" ")
             amount = int(amount)
 
-            if action == 'buy':
+            if action == "buy":
                 self.buy(ticker, amount)
-            elif action == 'sell':
+            elif action == "sell":
                 self.sell(ticker, amount)
-                
+
         self.user_cmds.clear()
         self.user_cmds_lock.release()
-
 
     def process_ticker(self, ticker, ticker_data, current_price):
         initial_price = ticker_data["initial_price"]
@@ -120,15 +132,20 @@ class GNAT_Algo(BaseAlgo):
         delta_price = current_price - initial_price
 
         # Update candles figure
-        candles_figure.update_traces(x=ohlc.index,
-                            open=ohlc["open"],
-                            high=ohlc["high"],
-                            low=ohlc["low"],
-                            close=ohlc["close"])
+        candles_figure.update_traces(
+            x=ohlc.index,
+            open=ohlc["open"],
+            high=ohlc["high"],
+            low=ohlc["low"],
+            close=ohlc["close"],
+        )
 
         # Update price figure
-        price_figure.update_traces(x=ohlc.index, y=np.append(price_figure.data[0].y, [current_price]))
+        price_figure.update_traces(
+            x=ohlc.index, y=np.append(price_figure.data[0].y, [current_price])
+        )
 
         # Update price delta figure
-        price_delta_figure.update_traces(x=ohlc.index, y=np.append(price_delta_figure.data[0].y, [delta_price]))
-
+        price_delta_figure.update_traces(
+            x=ohlc.index, y=np.append(price_delta_figure.data[0].y, [delta_price])
+        )
