@@ -5,7 +5,7 @@
 GNAT is a financial tool with two goals in mind:
 
 1. To provide a dashboard with the detailed stock/crypto information of your choice.
-2. To provide confidence in the Harvest framework which GNAT heavily relies on.
+2. To provide confidence in the [Harvest](https://tfukaza.github.io/harvest-website/) framework which GNAT heavily relies on.
 
 ### How to use
 
@@ -50,5 +50,5 @@ GNAT runs three threads:
 
 ### How its made
 
-GNAT is build off of Harvest and Dash. Harvest is an algorithmic trading framework that supports multiple brokers and Dash is a tool to create awesome plots and data driven web application.
+GNAT is build off of [Harvest](https://tfukaza.github.io/harvest-website/) and [Dash](https://plotly.com/dash/). [Harvest](https://tfukaza.github.io/harvest-website/) is an algorithmic trading framework that supports multiple brokers and [Dash](https://plotly.com/dash/) is a tool to create awesome plots and data driven web application.
 
