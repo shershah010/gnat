@@ -25,7 +25,9 @@ ACTION TICKER AMOUNT
 ```
 
 `ACTION` is either `buy` or `sell`
+
 `TICKER` is a valid ticker
+
 `AMOUNT` is a postive integer
 
 Examples:
