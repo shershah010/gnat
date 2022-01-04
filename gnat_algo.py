@@ -27,21 +27,21 @@ class GNAT_Algo(BaseAlgo):
 
             candles_figure = go.Figure(data=candles_data)
             candles_figure.update_layout(
-                title=ticker + "OHLC",
+                title=ticker + " OHLC",
                 xaxis_title="Timestamp",
                 yaxis_title="Price (USD)",
             )
 
             price_figure = go.Figure(go.Scatter(x=[], y=[]))
-            candles_figure.update_layout(
-                title=ticker + "Price",
+            price_figure.update_layout(
+                title=ticker + " Price",
                 xaxis_title="Timestamp",
                 yaxis_title="Price (USD)",
             )
 
             price_delta_figure = go.Figure(go.Scatter(x=[], y=[]))
-            candles_figure.update_layout(
-                title=ticker + "Price Delta",
+            price_delta_figure.update_layout(
+                title=ticker + " Price Delta",
                 xaxis_title="Timestamp",
                 yaxis_title="Price (USD)",
             )
@@ -85,7 +85,7 @@ class GNAT_Algo(BaseAlgo):
         return html.Div(graphs)
 
     def main(self):
-
+        now = dt.datetime.now()
         if now - now.replace(hour=0, minute=0, second=0, microsecond=0) <= dt.timedelta(
             seconds=60
         ):
@@ -108,7 +108,7 @@ class GNAT_Algo(BaseAlgo):
 
             self.process_ticker(ticker, ticker_value, current_price)
 
-        self.user_cmds_lock.aquire()
+        self.user_cmds_lock.acquire()
         for cmd in self.user_cmds:
             action, ticker, amount = cmd.split(" ")
             amount = int(amount)

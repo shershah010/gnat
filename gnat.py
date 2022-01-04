@@ -68,7 +68,7 @@ def get_input(user_cmds, lock):
         print("Enter a command:")
         cmd = input()
         if valid_cmd(cmd):
-            self.lock.aquire()
+            self.lock.acquire()
             user_cmds.append(cmd)
             self.lock.release()
 
