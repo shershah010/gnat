@@ -20,7 +20,33 @@ def start_harvest(assets, algo, storage, streamer, broker):
 
 
 def valid_cmd(cmd: str):
-    return False
+    """
+    Returns true if the given command is valid.
+    Valid commads are of the form: 
+        ACTION TICKER AMOUNT
+    """
+
+    tokens = cmd.split(' ')
+
+    if len(tokens) != 3
+        print("Incorrect format: require ACTION TICKER AMOUNT")
+        return False
+
+    if tokens[0] not in ('buy', 'sell')
+        print("ACTION is not either 'buy' or 'sell'")
+        return False
+
+    try:
+        int(tokens[2])
+    except:
+        print("AMOUNT not an integer")
+        return False
+
+    if int(tokens[2]) <= 0:
+        print("AMOUNT is not positive")
+        return False
+
+    return True
 
 
 def get_input(user_cmds, lock)

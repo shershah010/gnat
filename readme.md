@@ -18,6 +18,26 @@ python gnat.py my_config.yaml
 
 Input the requested information and then go to `localhost:8050` to see the dashboard.
 
+For sending buy, sell requests to GNAT use the following syntax:
+
+```
+ACTION TICKER AMOUNT
+```
+
+`ACTION` is either `buy` or `sell`
+`TICKER` is a valid ticker
+`AMOUNT` is a postive integer
+
+Examples:
+
+```
+BUY AAPL 5
+SELL MSFT 3
+BUY @DOGE 10
+SELL @BTC 1
+```
+
+
 ### How it works
 
 On start, GNAT asks the user what assets they want to watch for. Then GNAT will ask for some Harvest related configurations. Finally GNAT will start. Both the assets and Harvest configurations can be saved into a yaml file that GNAT can read in.

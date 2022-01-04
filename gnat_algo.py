@@ -97,7 +97,14 @@ class GNAT_Algo(BaseAlgo):
 
         self.user_cmds_lock.aquire()
         for cmd in self.user_cmds:
-            print("Processing command:", cmd)
+            action, ticker, amount = cmd.split(' ')
+            amount = int(amount)
+
+            if action == 'buy':
+                self.buy(ticker, amount)
+            elif action == 'sell':
+                self.sell(ticker, amount)
+                
         self.user_cmds.clear()
         self.user_cmds_lock.release()
 
