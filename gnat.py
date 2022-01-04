@@ -21,7 +21,7 @@ except:
 from harvest.storage.csv_storage import CSVStorage
 
 
-def start_harvest(assets, algo, storage, streamer, broker):
+def start_harvest(assets: List[str], algo, storage, streamer, broker):
     trader = LiveTrader(streamer=streamer, storage=storage, broker=broker, debug=True)
     trader.set_symbol(assets)
     trader.set_algo(gnat_algo)
@@ -96,7 +96,7 @@ def init_harvest_classes(streamer: str, broker: str, secret_path: str):
         return streamer_cls, streamer_cls
 
     if broker == "paper":
-        broker_cls = PaperBroker(streamer_cls)
+        broker_cls = PaperBroker(secret_path, streamer_cls)
     elif broker == "alpaca":
         print("Is your account a basic account? (y/n)")
         basic_account = input()
@@ -116,6 +116,7 @@ if __name__ == "__main__":
         "List your assets' ticker with comma seperation. For cryptos, prefex the ticker with an '@' (e.g @DOGE)."
     )
     assets = input()
+    assets = [asset.strip() for asset in assets.split(",")]
 
     # Store the OHLC data in a folder called `gnat_storage` with each file stored as a csv document
     csv_storage = CSVStorage(save_dir="gnat_storage")
@@ -127,6 +128,7 @@ if __name__ == "__main__":
     broker = input()
     print("Path to secret.yaml if needed.")
     secret_path = input()
+    secret_path = None if secret_path == "" else secret_path
 
     streamer, broker = init_harvest_classes(streamer, broker, secret_path)
 
