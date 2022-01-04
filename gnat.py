@@ -1,14 +1,19 @@
 import threading
+import datetime as dt
 from typing import List
 
 from gnat_algo import GNAT_Algo
 
 from harvest.trader import LiveTrader
 from harvest.api.dummy import DummyStreamer
+from harvest.api.paper import PaperBroker
+from harvest.api.yahoo import YahooStreamer
+from harvest.api.polygon import PolygonStreamer 
+try: 
+    from harvest.api.alpaca import Alpaca
+except:
+    Alpaca = lambda x, y, z: print("Please install 'alpaca-trade-api'")
 from harvest.storage.csv_storage import CSVStorage
-
-def validate_assets(assets: List[str]):
-    pass
 
 
 def start_harvest(assets, algo, storage, streamer, broker):
@@ -63,11 +68,47 @@ def get_input(user_cmds, lock)
     print("Goodbye!")
 
 
+def init_harvest_classes(streamer: str, broker: str, secret_path: str):
+    if streamer == "dummy":
+        streamer_cls = DummyStreamer(dt.datetime.now())
+    elif streamer == "yahoo":
+        streamer_cls = YahooStreamer()
+    elif streamer == "polygon":
+        print("Is your account a basic account? (y/n)")
+        basic_account = input()
+        streamer_cls = PolygonStreamer(secret_path, basic_account == 'y') 
+    elif streamer == "alpaca"
+        print("Is your account a basic account? (y/n)")
+        basic_account = input()
+        print("Do you want to use Alpaca's paper trader? (y/n)")
+        paper_trader = input()
+        streamer_cls = Alpaca(secret_path, basic_account=='y', paper_trader=='y')
+
+    if streamer_cls is None:
+        exit()
+
+    if streamer == broker
+        return streamer_cls, streamer_cls
+
+    if broker == 'paper':
+        broker_cls = PaperBroker(streamer_cls)
+    elif broker == 'alpaca':
+        print("Is your account a basic account? (y/n)")
+        basic_account = input()
+        print("Do you want to use Alpaca's paper trader? (y/n)")
+        paper_trader = input()
+        streamer_cls = Alpaca(secret_path, basic_account=='y', paper_trader=='y')
+
+    if broker_cls is None:
+        exit()
+
+    return streamer_cls, broker_cls
+
+
 if __name__ == "__main__":
     # Get assets
     print("List your assets' ticker with comma seperation. For cryptos, prefex the ticker with an '@' (e.g @DOGE).")
     assets = input()
-    validate_assets(assets)
 
     # Store the OHLC data in a folder called `gnat_storage` with each file stored as a csv document
     csv_storage = CSVStorage(save_dir="gnat_storage")
@@ -79,6 +120,8 @@ if __name__ == "__main__":
     broker = input()
     print("Path to secret.yaml if needed.")
     secret_path = input()
+
+    streamer, broker = init_harvest_classes(streamer, broker, secret_path)
 
     # Init the GNAT algo and get the dash thread
     gnat_algo = GNAT_Algo()
