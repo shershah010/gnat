@@ -1,2 +1,5 @@
 secret.yaml
-gnat_storage
+harvest.log
+
+gnat_storage/
+__pycache__/

@@ -35,6 +35,8 @@ def valid_cmd(cmd: str):
     Valid commads are of the form:
         ACTION TICKER AMOUNT
     """
+    if cmd in ("q" or "quit"):
+        return False
 
     tokens = cmd.split(" ")
 
@@ -62,7 +64,7 @@ def valid_cmd(cmd: str):
 def get_input(user_cmds, lock):
     cmd = ""
     print("Type 'q' or 'quit' to exit.")
-    while cmd != "q" or cmd != "quit":
+    while cmd not in ("q", "quit"):
         print("Enter a command:")
         cmd = input()
         if valid_cmd(cmd):
