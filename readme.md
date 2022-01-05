@@ -39,6 +39,17 @@ BUY @DOGE 10
 SELL @BTC 1
 ```
 
+If you have a configuration that you use often you can create a config file. Here is an example:
+
+```yaml
+assets: AAPL # comma seperated values: AAPL, @DOGE, MSFT
+streamer: dummy # options are: dummy, yahoo, polygon, alpaca
+broker: paper # options are: paper, alpaca
+# secret: secret.yaml # path to a file holding polygon or alpaca api tokens if needed
+# basic_account: y # For polygon or alpaca, whether the accounts are the basic tier or not; options are: y, n
+# alpaca_paper_trader # For alpaca only, whether to use alpaca's paper trader or to trade live, options are y, n
+```
+
 
 ### How it works
 
