@@ -1,9 +1,11 @@
+import sys
 import threading
 import datetime as dt
 from typing import List
 
 from gnat_algo import GNAT_Algo
 
+import yaml 
 from harvest.trader import LiveTrader
 from harvest.api.dummy import DummyStreamer
 from harvest.api.paper import PaperBroker
@@ -75,21 +77,24 @@ def get_input(user_cmds, lock):
     print("Goodbye!")
 
 
-def init_harvest_classes(streamer: str, broker: str, secret_path: str):
+def init_harvest_classes(streamer: str, broker: str, secret_path: str, basic_account: str, alpaca_paper_trader: str):
     if streamer == "dummy":
         streamer_cls = DummyStreamer(dt.datetime.now())
     elif streamer == "yahoo":
         streamer_cls = YahooStreamer()
     elif streamer == "polygon":
-        print("Is your account a basic account? (y/n)")
-        basic_account = input()
+        if basic_account is None:
+            print("Is your account a basic account? (y/n)")
+            basic_account = input()
         streamer_cls = PolygonStreamer(secret_path, basic_account == "y")
     elif streamer == "alpaca":
-        print("Is your account a basic account? (y/n)")
-        basic_account = input()
-        print("Do you want to use Alpaca's paper trader? (y/n)")
-        paper_trader = input()
-        streamer_cls = Alpaca(secret_path, basic_account == "y", paper_trader == "y")
+        if basic_account is None:
+            print("Is your account a basic account? (y/n)")
+            basic_account = input()
+        if alpaca_paper_trader is None:
+            print("Do you want to use Alpaca's paper trader? (y/n)")
+            alpaca_paper_trader = input()
+        streamer_cls = Alpaca(secret_path, basic_account == "y", alpaca_paper_trader == "y")
 
     if streamer_cls is None:
         exit()
@@ -100,11 +105,13 @@ def init_harvest_classes(streamer: str, broker: str, secret_path: str):
     if broker == "paper":
         broker_cls = PaperBroker(secret_path, streamer_cls)
     elif broker == "alpaca":
-        print("Is your account a basic account? (y/n)")
-        basic_account = input()
-        print("Do you want to use Alpaca's paper trader? (y/n)")
-        paper_trader = input()
-        streamer_cls = Alpaca(secret_path, basic_account == "y", paper_trader == "y")
+        if basic_account is None:
+            print("Is your account a basic account? (y/n)")
+            basic_account = input()
+        if alpaca_paper_trader is None:
+            print("Do you want to use Alpaca's paper trader? (y/n)")
+            alpaca_paper_trader = input()
+        streamer_cls = Alpaca(secret_path, basic_account == "y", alpaca_paper_trader == "y")
 
     if broker_cls is None:
         exit()
@@ -113,26 +120,40 @@ def init_harvest_classes(streamer: str, broker: str, secret_path: str):
 
 
 if __name__ == "__main__":
-    # Get assets
-    print(
-        "List your assets' ticker with comma seperation. For cryptos, prefex the ticker with an '@' (e.g @DOGE)."
-    )
-    assets = input()
+    basic_account = None
+    alpaca_paper_trader = None
+
+    # Check for configuration
+    if len(sys.argv) == 2:
+        with open(sys.argv[1], 'r') as file:
+            config = yaml.safe_load(file)
+            assets = config["assets"]
+            streamer = config["streamer"]
+            broker = config["broker"]
+            secret_path = config.get("secret_path", None)
+            basic_account = config.get("basic_account", None)
+            alpaca_paper_trader = config.get("alpaca_paper_trader", None)
+    else:
+        # Get assets
+        print(
+            "List your assets' ticker with comma seperation. For cryptos, prefex the ticker with an '@' (e.g @DOGE)."
+        )
+        assets = input()
+
+        # Get Harvest configuration
+        print("Pick a streamer: dummy, yahoo, polygon, alpaca.")
+        streamer = input()
+        print("Pick a broker: paper, alpaca.")
+        broker = input()
+        print("Path to secret.yaml if needed.")
+        secret_path = input()
+
     assets = [asset.strip() for asset in assets.split(",")]
+    secret_path = None if secret_path == "" else secret_path
+    streamer, broker = init_harvest_classes(streamer, broker, secret_path, basic_account, alpaca_paper_trader)
 
     # Store the OHLC data in a folder called `gnat_storage` with each file stored as a csv document
     csv_storage = CSVStorage(save_dir="gnat_storage")
-
-    # Get Harvest configuration
-    print("Pick a streamer: dummy, yahoo, polygon, alpaca.")
-    streamer = input()
-    print("Pick a broker: paper, alpaca.")
-    broker = input()
-    print("Path to secret.yaml if needed.")
-    secret_path = input()
-    secret_path = None if secret_path == "" else secret_path
-
-    streamer, broker = init_harvest_classes(streamer, broker, secret_path)
 
     # Init the GNAT algo and get the dash thread
     gnat_algo = GNAT_Algo()
