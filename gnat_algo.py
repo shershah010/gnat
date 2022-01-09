@@ -9,15 +9,11 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-import dash
-from dash import dcc
-from dash import html
-
 
 class GNAT_Algo(BaseAlgo):
     def __init__(self):
         self.tickers = {}
-        self.dash_thread = threading.Thread(target=self.dash, daemon=True).start()
+        self.tickers_lock = threading.Lock()
         self.user_cmds = []
         self.user_cmds_lock = threading.Lock()
 
@@ -56,42 +52,22 @@ class GNAT_Algo(BaseAlgo):
                 }
             }
 
+        self.tickers_lock.acquire()
         for symbol in self.trader.watchlist:
             self.tickers.update(init_ticker(symbol))
-
-    def dash(self):
-        app = dash.Dash()
-        app.layout = self.dash_layout
-        app.run_server(debug=True, use_reloader=False)
-
-    def dash_layout(self):
-        graphs = []
-        for symbol in self.tickers.keys():
-            graph = dcc.Graph(
-                id=f"{symbol}_candles_figure",
-                figure=self.tickers[symbol]["candles_figure"],
-            )
-            graphs.append(graph)
-            graph = dcc.Graph(
-                id=f"{symbol}_price_figure", figure=self.tickers[symbol]["price_figure"]
-            )
-            graphs.append(graph)
-            graph = dcc.Graph(
-                id=f"{symbol}_price_delta_figure",
-                figure=self.tickers[symbol]["price_delta_figure"],
-            )
-            graphs.append(graph)
-
-        return html.Div(graphs)
+        self.tickers_lock.release()
 
     def main(self):
         now = dt.datetime.now()
         if now - now.replace(hour=0, minute=0, second=0, microsecond=0) <= dt.timedelta(
             seconds=60
         ):
+            self.tickers_lock.acquire()
             for ticker_value in self.tickers.values():
                 ticker_value["ohlc"] = pd.DataFrame()
+            self.tickers_lock.release()
 
+        self.tickers_lock.acquire()
         for ticker, ticker_value in self.tickers.items():
             current_price = self.get_asset_current_price(ticker)
             current_ohlc = self.get_asset_current_candle(ticker)
@@ -107,6 +83,7 @@ class GNAT_Algo(BaseAlgo):
                 ticker_value["initial_price"] = current_price
 
             self.process_ticker(ticker, ticker_value, current_price)
+        self.tickers_lock.release()
 
         self.user_cmds_lock.acquire()
         for cmd in self.user_cmds:

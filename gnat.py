@@ -1,11 +1,13 @@
 import sys
+import time
 import threading
 import datetime as dt
 from typing import List
 
+from gnat_ui import setup_dash
 from gnat_algo import GNAT_Algo
 
-import yaml 
+import yaml
 from harvest.trader import LiveTrader
 from harvest.api.dummy import DummyStreamer
 from harvest.api.paper import PaperBroker
@@ -29,6 +31,19 @@ def start_harvest(assets: List[str], algo, storage, streamer, broker):
     trader.set_algo(gnat_algo)
     # Update every minute
     trader.start("1MIN", all_history=False)
+
+
+def start_dash(tickers, tickers_lock):
+    # Wait for the tickers to be populated
+    tickers_lock.acquire()
+    while len(tickers.keys()) == 0:
+        tickers_lock.release()
+        time.sleep(5)
+        tickers_lock.acquire()
+    tickers_lock.release()
+
+    # Start Dash
+    setup_dash(tickers, tickers_lock)
 
 
 def valid_cmd(cmd: str):
@@ -77,7 +92,13 @@ def get_input(user_cmds, lock):
     print("Goodbye!")
 
 
-def init_harvest_classes(streamer: str, broker: str, secret_path: str, basic_account: str, alpaca_paper_trader: str):
+def init_harvest_classes(
+    streamer: str,
+    broker: str,
+    secret_path: str,
+    basic_account: str,
+    alpaca_paper_trader: str,
+):
     if streamer == "dummy":
         streamer_cls = DummyStreamer(dt.datetime.now())
     elif streamer == "yahoo":
@@ -94,7 +115,9 @@ def init_harvest_classes(streamer: str, broker: str, secret_path: str, basic_acc
         if alpaca_paper_trader is None:
             print("Do you want to use Alpaca's paper trader? (y/n)")
             alpaca_paper_trader = input()
-        streamer_cls = Alpaca(secret_path, basic_account == "y", alpaca_paper_trader == "y")
+        streamer_cls = Alpaca(
+            secret_path, basic_account == "y", alpaca_paper_trader == "y"
+        )
 
     if streamer_cls is None:
         exit()
@@ -111,7 +134,9 @@ def init_harvest_classes(streamer: str, broker: str, secret_path: str, basic_acc
         if alpaca_paper_trader is None:
             print("Do you want to use Alpaca's paper trader? (y/n)")
             alpaca_paper_trader = input()
-        streamer_cls = Alpaca(secret_path, basic_account == "y", alpaca_paper_trader == "y")
+        streamer_cls = Alpaca(
+            secret_path, basic_account == "y", alpaca_paper_trader == "y"
+        )
 
     if broker_cls is None:
         exit()
@@ -125,7 +150,7 @@ if __name__ == "__main__":
 
     # Check for configuration
     if len(sys.argv) == 2:
-        with open(sys.argv[1], 'r') as file:
+        with open(sys.argv[1], "r") as file:
             config = yaml.safe_load(file)
             assets = config["assets"]
             streamer = config["streamer"]
@@ -150,19 +175,25 @@ if __name__ == "__main__":
 
     assets = [asset.strip() for asset in assets.split(",")]
     secret_path = None if secret_path == "" else secret_path
-    streamer, broker = init_harvest_classes(streamer, broker, secret_path, basic_account, alpaca_paper_trader)
+    streamer, broker = init_harvest_classes(
+        streamer, broker, secret_path, basic_account, alpaca_paper_trader
+    )
 
     # Store the OHLC data in a folder called `gnat_storage` with each file stored as a csv document
     csv_storage = CSVStorage(save_dir="gnat_storage")
 
     # Init the GNAT algo and get the dash thread
     gnat_algo = GNAT_Algo()
-    dash_thread = gnat_algo.dash_thread
     # Start Harvest
     harvest_thread = threading.Thread(
         target=start_harvest,
         args=(assets, gnat_algo, csv_storage, streamer, broker),
         daemon=True,
+    ).start()
+
+    # Start Dash
+    dash_thread = threading.Thread(
+        target=start_dash, args=(gnat_algo.tickers, gnat_algo.tickers_lock), daemon=True
     ).start()
 
     # Listen for user input

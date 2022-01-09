@@ -65,3 +65,9 @@ GNAT runs three threads:
 
 GNAT is build off of [Harvest](https://tfukaza.github.io/harvest-website/) and [Dash](https://plotly.com/dash/). [Harvest](https://tfukaza.github.io/harvest-website/) is an algorithmic trading framework that supports multiple brokers and [Dash](https://plotly.com/dash/) is a tool to create awesome plots and data driven web application.
 
+
+### Example Dashboards
+
+![Fake MSFT Graphs](assets/fake-msft-tab.png)
+
+![Fake AAPL Graphs](assets/fake-aapl-tab.png)
