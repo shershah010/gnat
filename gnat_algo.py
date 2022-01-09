@@ -44,7 +44,7 @@ class GNAT_Algo(BaseAlgo):
 
             return {
                 ticker: {
-                    "initial_price": None,
+                    "previous_price": None,
                     "ohlc": pd.DataFrame(),
                     "candles_figure": candles_figure,
                     "price_figure": price_figure,
@@ -79,8 +79,8 @@ class GNAT_Algo(BaseAlgo):
                 ~ticker_value["ohlc"].index.duplicated(keep="first")
             ]
 
-            if ticker_value["initial_price"] is None:
-                ticker_value["initial_price"] = current_price
+            if ticker_value["previous_price"] is None:
+                ticker_value["previous_price"] = current_price
 
             self.process_ticker(ticker, ticker_value, current_price)
         self.tickers_lock.release()
@@ -99,14 +99,15 @@ class GNAT_Algo(BaseAlgo):
         self.user_cmds_lock.release()
 
     def process_ticker(self, ticker, ticker_data, current_price):
-        initial_price = ticker_data["initial_price"]
+        previous_price = ticker_data["previous_price"]
         ohlc = ticker_data["ohlc"]
         candles_figure = ticker_data["candles_figure"]
         price_figure = ticker_data["price_figure"]
         price_delta_figure = ticker_data["price_delta_figure"]
 
         # Calculate the price change
-        delta_price = current_price - initial_price
+        delta_price = current_price - previous_price
+        ticker_data["previous_price"] = current_price
 
         # Update candles figure
         candles_figure.update_traces(
