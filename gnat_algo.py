@@ -42,6 +42,33 @@ class GNAT_Algo(BaseAlgo):
                 yaxis_title="Price (USD)",
             )
 
+            sma_figure = go.Figure(go.Scatter(x=[], y=[]))
+            sma_figure.update_layout(
+                title=ticker + " SMA",
+                xaxis_title="Timestamp",
+                yaxis_title="Price (USD)",
+            )
+
+            ema_figure = go.Figure(go.Scatter(x=[], y=[]))
+            ema_figure.update_layout(
+                title=ticker + " EMA",
+                xaxis_title="Timestamp",
+                yaxis_title="Price (USD)",
+            )
+
+            bbands_figure = go.Figure(
+                [
+                    go.Scatter(x=[], y=[], name="top"),
+                    go.Scatter(x=[], y=[], name="middle"),
+                    go.Scatter(x=[], y=[], name="bottom"),
+                ]
+            )
+            bbands_figure.update_layout(
+                title=ticker + " Bollinger Bands",
+                xaxis_title="Timestamp",
+                yaxis_title="Price (USD)",
+            )
+
             return {
                 ticker: {
                     "previous_price": None,
@@ -49,6 +76,9 @@ class GNAT_Algo(BaseAlgo):
                     "candles_figure": candles_figure,
                     "price_figure": price_figure,
                     "price_delta_figure": price_delta_figure,
+                    "sma_figure": sma_figure,
+                    "ema_figure": ema_figure,
+                    "bbands_figure": bbands_figure,
                 }
             }
 
@@ -104,6 +134,9 @@ class GNAT_Algo(BaseAlgo):
         candles_figure = ticker_data["candles_figure"]
         price_figure = ticker_data["price_figure"]
         price_delta_figure = ticker_data["price_delta_figure"]
+        sma_figure = ticker_data["sma_figure"]
+        ema_figure = ticker_data["ema_figure"]
+        bbands_figure = ticker_data["bbands_figure"]
 
         # Calculate the price change
         delta_price = current_price - previous_price
@@ -127,3 +160,28 @@ class GNAT_Algo(BaseAlgo):
         price_delta_figure.update_traces(
             x=ohlc.index, y=np.append(price_delta_figure.data[0].y, [delta_price])
         )
+
+        # Peroid for calculating below stats is 14 minutes.
+        if len(ohlc) > 13:
+            sma = self.sma(ticker)
+            ema = self.ema(ticker)
+            t, m, b = self.bbands(ticker)
+            # Update SMA figure
+            sma_figure.update_traces(x=list(range(len(sma))), y=sma)
+
+            # Update EMA figure
+            ema_figure.update_traces(x=list(range(len(ema))), y=ema)
+
+            # Update BBANDS figure
+
+            bbands_figure.update_traces(
+                x=list(range(len(t))), y=t, selector=dict(name="top")
+            )
+
+            bbands_figure.update_traces(
+                x=list(range(len(m))), y=m, selector=dict(name="middle")
+            )
+
+            bbands_figure.update_traces(
+                x=list(range(len(b))), y=b, selector=dict(name="bottom")
+            )
