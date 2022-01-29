@@ -19,7 +19,7 @@ class GNAT_Algo(BaseAlgo):
 
     def setup(self):
         def init_ticker(ticker):
-            candles_data = go.Candlestick(x=[], open=[], high=[], low=[], close=[])
+            candles_data = go.Ohlc(x=[], open=[], high=[], low=[], close=[])
 
             candles_figure = go.Figure(data=candles_data)
             candles_figure.update_layout(

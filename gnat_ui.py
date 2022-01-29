@@ -86,6 +86,9 @@ def dash_layout(symbol):
 
 
 def generate_table(df, max_rows=10):
+    if df.empty:
+        return html.Div([html.H3("Waiting for data...")])
+
     df["timestamp"] = df.index.strftime("%I:%M:%S %p")
     df = df[["timestamp", "open", "high", "low", "close", "volume"]]
     table = html.Table(

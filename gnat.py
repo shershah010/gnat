@@ -21,6 +21,12 @@ except:
     def Alpaca(x, y, z):
         print("Please install 'alpaca-trade-api'")
 
+try:
+    from harvest.api.kraken import Kraken
+except:
+
+    def Kraken():
+        print("Please install 'krakenex'")
 
 from harvest.storage.csv_storage import CSVStorage
 
@@ -118,6 +124,8 @@ def init_harvest_classes(
         streamer_cls = Alpaca(
             secret_path, basic_account == "y", alpaca_paper_trader == "y"
         )
+    elif streamer == "kraken":
+        streamer_cls = Kraken(secret_path)
 
     if streamer_cls is None:
         exit()
@@ -137,6 +145,8 @@ def init_harvest_classes(
         streamer_cls = Alpaca(
             secret_path, basic_account == "y", alpaca_paper_trader == "y"
         )
+    elif broker == "kraken":
+        broker_cls = Kraken(secret_path)
 
     if broker_cls is None:
         exit()
