@@ -1,7 +1,6 @@
 import sys
 import time
-import threading
-import datetime as dt
+import threading 
 from typing import List
 
 from gnat_ui import setup_dash
@@ -106,7 +105,7 @@ def init_harvest_classes(
     alpaca_paper_trader: str,
 ):
     if streamer == "dummy":
-        streamer_cls = DummyStreamer(dt.datetime.now())
+        streamer_cls = DummyStreamer()
     elif streamer == "yahoo":
         streamer_cls = YahooStreamer()
     elif streamer == "polygon":
